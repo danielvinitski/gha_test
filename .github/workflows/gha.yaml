@@ -31,11 +31,14 @@ jobs:
           PR_URL: ${{github.event.pull_request.html_url}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
-          LABELS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}/labels")
-          NUMBER_OF_LABELS=$(echo "$LABELS" |wc -w)
+          API_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/{{ github.event.pull_request.number}}"
+          PR_LABELS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "$API_URL" | jq --raw-output '.labels | map(.name) | join(", ")')
+          echo "PR_LABELS=$PR_LABELS" >> $GITHUB_ENV
+          NUMBER_OF_LABELS=$(echo "$PR_LABELS" |wc -w)
+          echo "Found: $PR_LABELS"
           if [ "$NUMBER_OF_LABELS" -eq "1" ] ; then
             echo "Found: $LABELS"
             echo "release-type=$LABELS" >> "$GITHUB_OUTPUT"
           fi
+          
+        
