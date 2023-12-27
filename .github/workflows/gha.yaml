@@ -1,15 +1,16 @@
 name: Release Module
 
 on:
-  push:
-    branches:
-      - main
+  pull_request:
+     branches: [master,main]
+     types: [closed]
 
 jobs:
   update_release_draft:
     permissions:
       contents: write
       pull-requests: write
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
