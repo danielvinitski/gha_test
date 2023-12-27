@@ -1,0 +1,34 @@
+name: Release Module
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  update_release_draft:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Check PR labels
+        id: check_pr_label
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          API_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}"
+          PR_LABELS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "$API_URL" | jq --raw-output '.labels | map(.name) | join(", ")')
+          NUMBER_OF_LABELS=$(echo "$PR_LABELS" |wc -w)
+          if [ "$NUMBER_OF_LABELS" -eq "1" ] ; then
+            echo "Found: $PR_LABELS"
+            echo "release-type=$PR_LABELS" >> "$GITHUB_OUTPUT"
+          fi
