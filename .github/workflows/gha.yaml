@@ -31,7 +31,7 @@ jobs:
           PR_URL: ${{github.event.pull_request.html_url}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
-          API_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/{{ github.event.pull_request.number}}"
+          API_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${{ github.event.pull_request.number }}"
           PR_LABELS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "$API_URL" | jq --raw-output '.labels | map(.name) | join(", ")')
           echo "PR_LABELS=$PR_LABELS" >> $GITHUB_ENV
           NUMBER_OF_LABELS=$(echo "$PR_LABELS" |wc -w)
